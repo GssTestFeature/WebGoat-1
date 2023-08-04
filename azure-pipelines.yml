@@ -30,6 +30,6 @@ steps:
     WS_APIKEY: '3ea1bfdc-6b9b-4661-97bb-0ed77dc4fbef'
     WS_USERKEY: '150c5046ff1e4109beec0c3913062fe9d7376e39b9b349db98b2f53dc29a3446'
     WS_WSS_URL: 'https://saas.whitesourcesoftware.com/agent'
-    WS_PRODUCTNAME: AZDO_CICD_Integrate
-    WS_PROJECTNAME: 'KaiTest'
+    WS_PRODUCTNAME: KaiTest
+    WS_PROJECTNAME: Kai_AZDO_CICD_Integrate
     WS_RESOLVEALLDEPENDENCIES: true
