@@ -30,8 +30,8 @@ steps:
     WS_APIKEY: $(APIKEY)
     WS_USERKEY: $(USERKEY)
     WS_WSS_URL: 'https://saas.whitesourcesoftware.com/agent'
-    WS_PRODUCTNAME: AsheAzure
-    WS_PROJECTNAME: AZDO_CICD_Integrate
+    WS_PRODUCTNAME: Evelyn
+    WS_PROJECTNAME: AzurePipeTest
     WS_RESOLVEALLDEPENDENCIES: true
 
     curl -L -g -X POST "https://saas.whitesourcesoftware.com/api/v1.4" -H "Content-Type: application/json" -d "{\"requestType\":\"getProjectRiskReport\",\"userKey\":\"" + $(USERKEY) +"\",\"projectToken\":\"690cb9506a58402d98ee98a4f25a8be9a6bd99a35525430d8855d80dc65ba302\"}"
