@@ -1,0 +1,65 @@
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+steps:
+# - task: NodeTool@0
+  # inputs:
+  #   versionSpec: '10.x'
+  # displayName: 'Install Node.js'
+- script: | # Console Print
+    echo "Pipeline.Workspace = "
+    echo $(Pipeline.Workspace)
+    echo "Build SourcesDirectory = "
+    echo $(Build.SourcesDirectory)
+    echo "ls = "
+    ls
+    echo "cat README.md"
+    cat README.md
+    echo "END OF README.md"
+  displayName: Console Print
+- script: | # Download UA and Scan
+    echo Download Unified Agent
+    curl -LJO https://unified-agent.s3.amazonaws.com/wss-unified-agent.jar
+    echo Start Scan The Job With WhiteSource
+    java -jar wss-unified-agent.jar -d $(Pipeline.Workspace) -apiKey $(APIKEY) -product AsheAzure -project Test_Mend_Pipeline
+  displayName: 'Download UA and Scan'
+  env:
+    WS_APIKEY: $(APIKEY)
+    WS_USERKEY: $(USERKEY)
+    WS_WSS_URL: 'https://saas.whitesourcesoftware.com/agent'
+    WS_RESOLVEALLDEPENDENCIES: true
+- script: | # Get All Product
+    curl --header content-type:application/json --data "{\"userKey\":\"$(userKey)\",\"orgToken\":\"$(APIKEY)\",\"requestType\":\"getAllProducts\"}" https://saas.whitesourcesoftware.com/api/v1.3 -o Pd_token.json
+  displayName: 'Get All Product'
+- task: PowerShell@2 # Get All Project Tokens (FAILED)
+  inputs:
+    targetType: 'inline'
+    script: |
+      $props_Pd = Get-Content -Path Pd_token.json | ConvertFrom-Json
+      $resultPd = $props_Pd.products | Where-Object { $_.productName -eq "$(PRODUCTNAME)" } | Select-Object -ExpandProperty productToken
+      Write-Output "PdToken: $resultPd"
+      echo "##vso[task.setvariable variable=PdToken]$resultPd"
+- script: | # Get Project Token
+    curl --header content-type:application/json --data "{\"userKey\":\"$(userKey)\",\"productToken\":\"$(PdToken)\",\"requestType\":\"getAllProjects\"}" https://saas.whitesourcesoftware.com/api/v1.3 -o Pj_token.json
+  displayName: 'Get Project Tokens'
+- task: PowerShell@2 # Get Project Token
+  inputs:
+    targetType: 'inline'
+    script: |
+      $props_Pj = Get-Content -Path Pj_token.json | ConvertFrom-Json
+      $resultPj = $props_Pj.projects | Where-Object { $_.projectName -eq "$(PROJECTNAME)" } | Select-Object -ExpandProperty projectToken
+      Write-Output "PjToken: $resultPj"
+- script: | # Download Risk Report
+    curl -L -g -X POST "https://saas.whitesourcesoftware.com/api/v1.4" -o Pd_token.json -H "Content-Type: application/json" -d "{\"requestType\":\"getAllProducts\",\"userKey\":\"$(USERKEY)\",\"orgToken\":\"$(APIKEY)\"}"
+    # props_Pd = readFile(file:'Pd_token.json')
+    # jsonpd = new JsonSlurperClassic().parseText(props_Pd)
+    # curl -H "Content-type: application/json" -d "{\"userKey\":\"$userKey\",\"productToken\":\"$resultPd\",\"requestType\":\"getAllProjects\"} https://saas.whitesourcesoftware.com/api/v1.3 -o Pj_token.json""
+
+    curl -L -g -X POST "https://saas.whitesourcesoftware.com/api/v1.4" -o RiskReport.pdf -H "Content-Type: application/json" -d "{\"requestType\":\"getProjectRiskReport\",\"userKey\":\"$(USERKEY)\",\"projectToken\":\"690cb9506a58402d98ee98a4f25a8be9a6bd99a35525430d8855d80dc65ba302\"}"
+  displayName: 'Download Risk Report'
+- task: PublishPipelineArtifact@1
+  inputs:
+    path: $(System.DefaultWorkingDirectory)/RiskReport.pdf
+    artifact: 'MyArtifact'
