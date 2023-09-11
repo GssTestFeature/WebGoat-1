@@ -1,0 +1,36 @@
+# Node.js
+# Build a general Node.js project with npm.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
+
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+# - task: NodeTool@0
+#   inputs:
+#     versionSpec: '10.x'
+#   displayName: 'Install Node.js'
+
+# - script: |
+#     npm install
+#     npm run build
+#   displayName: 'npm install and build'
+
+- script: |
+    echo Download Unified Agent
+    curl -LJO https://unified-agent.s3.amazonaws.com/wss-unified-agent.jar
+
+    echo Start Scan The Job With WhiteSource
+    java -jar wss-unified-agent.jar -d $(Pipeline.Workspace)   
+  displayName: 'Scan The Job With WhiteSource Unified Agent'
+  env:
+    WS_APIKEY: '3ea1bfdc-6b9b-4661-97bb-0ed77dc4fbef'
+    WS_USERKEY: 'cc66b9a692c8405585c54b25db6d4f3ddf5617d4b3444c67b50b3298b3d9364b'
+    WS_WSS_URL: 'https://saas.whitesourcesoftware.com/agent'
+    WS_PRODUCTNAME: Evelyn
+    WS_PROJECTNAME: MendforAzure_0911
+    WS_RESOLVEALLDEPENDENCIES: true
