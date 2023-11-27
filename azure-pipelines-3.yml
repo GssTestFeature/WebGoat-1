@@ -23,7 +23,7 @@ steps:
     echo Download Unified Agent
     curl -LJO https://unified-agent.s3.amazonaws.com/wss-unified-agent.jar
     echo Start Scan The Job With WhiteSource
-    java -jar wss-unified-agent.jar -d $(Pipeline.Workspace) -apiKey $(APIKEY) -product AsheAzure -project Test_Mend_Pipeline
+    java -jar wss-unified-agent.jar -d $(Pipeline.Workspace) -apiKey $(APIKEY) -product $(PRODUCTNAME) -project $(PROJECTNAME)
   displayName: 'Download UA and Scan'
   env:
     WS_APIKEY: $(APIKEY)
